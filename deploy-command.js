@@ -32,7 +32,7 @@ for (const folder of commandFolders) {
 const rest = new REST().setToken(token);
 
 // and deploy your commands!
-(async () => {
+async () => {
   try {
     console.log(
       `Started refreshing ${commands.length} application (/) commands.`
@@ -51,4 +51,4 @@ const rest = new REST().setToken(token);
     // And of course, make sure you catch and log any errors!
     console.error(error);
   }
-})();
+};
