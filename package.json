@@ -1,0 +1,16 @@
+{
+  "name": "harambebot",
+  "version": "1.0.0",
+  "description": "Personal-use Discord music bot that drives a local Kenku FM instance for TOS-compliant playback",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-command.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3"
+  }
+}
