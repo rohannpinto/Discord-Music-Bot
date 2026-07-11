@@ -61,7 +61,7 @@ module.exports = {
         if (!role) {
           role = await guild.roles.create({
             name: "Disc Monkey",
-            color: "BLUE",
+            color: "Blue", // discord.js v14 color names are PascalCase; "BLUE" throws
           });
         }
 
@@ -69,6 +69,7 @@ module.exports = {
         await interaction.followUp(
           `You have been granted the Disc Monkey role, and an access token has been sent to you!`
         );
+        collector.stop("approved"); // One approval is enough; don't DM the token again on further reactions
       } catch (error) {
         console.error("Error sending DM or adding role:", error);
         await interaction.followUp(
@@ -77,8 +78,8 @@ module.exports = {
       }
     });
 
-    collector.on("end", (collected) => {
-      if (collected.size === 0) {
+    collector.on("end", (collected, reason) => {
+      if (reason !== "approved" && collected.size === 0) {
         interaction.followUp("No Disc Gorilla approved the token request.");
       }
     });
