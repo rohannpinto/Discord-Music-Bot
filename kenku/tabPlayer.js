@@ -15,6 +15,7 @@ Kenku when the tab is opened; tabs created from outside are not captured).
 Uses Node's global fetch + WebSocket — no dependencies.
 */
 
+const WebSocket = require("ws");
 const config = require("../config.json");
 
 const DEBUG_PORT = Number(config.kenkuDebugPort) || 9222;
