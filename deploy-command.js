@@ -28,11 +28,19 @@ for (const folder of commandFolders) {
   }
 }
 
+if (!clientId || !guildId || clientId === "test" || guildId === "test") {
+  console.error(
+    "config.json needs real 'clientId' and 'guildId' values to deploy commands. " +
+      "clientId is your application ID (Discord Developer Portal), guildId is your server ID."
+  );
+  process.exit(1);
+}
+
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(token);
 
 // and deploy your commands!
-async () => {
+(async () => {
   try {
     console.log(
       `Started refreshing ${commands.length} application (/) commands.`
@@ -51,4 +59,4 @@ async () => {
     // And of course, make sure you catch and log any errors!
     console.error(error);
   }
-};
+})();

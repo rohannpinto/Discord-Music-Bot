@@ -1,53 +1,50 @@
-/*this command will instruct the user to install Kenku FM, with a link to install, and run /token to play songs.
-review AI code*/
+/*
+/kenku — onboarding + status. Kenku FM itself is the audio client that sits in
+the voice channel (it connects to Discord with the bot token), so this command
+no longer tries to join voice from the bot process; it reports whether the
+local Kenku FM instance is reachable instead.
+Note: the previous version imported joinVoiceChannel from discord.js, which
+does not export it — that branch always crashed.
+*/
 
-const { SlashCommandBuilder, joinVoiceChannel } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
+const kenku = require("../../kenku/remote");
+const tabPlayer = require("../../kenku/tabPlayer");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("kenku")
-    .setDescription(
-      "Install Kenku FM and or join your voice channel if you have the Disc Monkey role."
-    ),
+    .setDescription("Kenku FM setup instructions and connection status."),
   async execute(interaction) {
     const member = interaction.member;
-    const guild = interaction.guild;
 
-    // Provide the installation link and instructions
-    await interaction.reply({
-      content:
-        "To install Kenku FM, please visit this link: [Kenku FM Installation](https://kenku.fm). After installing, run `/token` to start playing songs!",
-      ephemeral: true, // Only visible to the user who executed the command
-    });
-
-    //if the user has the role 'Disc Monkey' then HarambeBot should join that user's channel
-    // Check if the user has the 'Disc Monkey' role
     const hasDiscMonkeyRole = member.roles.cache.some(
       (role) => role.name === "Disc Monkey"
     );
 
-    if (hasDiscMonkeyRole) {
-      // Check if the user is in a voice channel
-      if (member.voice.channel) {
-        // Join the user's voice channel
-        const voiceChannel = member.voice.channel;
-        const connection = joinVoiceChannel({
-          channelId: voiceChannel.id,
-          guildId: guild.id,
-          adapterCreator: guild.voiceAdapterCreator,
-        });
-        await interaction.followUp(
-          `HarambeBot has joined your voice channel: ${voiceChannel.name}.`
-        );
-      } else {
-        await interaction.followUp(
-          "You are not in a voice channel, please join one first!"
-        );
-      }
-    } else {
-      await interaction.followUp(
-        "1. Please install [Kenku FM](https://kenku.fm). \n 2. Use `/token` to get access. \n 3. Rerun this command start playing songs!"
-      );
+    if (!hasDiscMonkeyRole) {
+      await interaction.reply({
+        content:
+          "1. Please install [Kenku FM](https://kenku.fm). \n 2. Use `/token` to get access. \n 3. Rerun this command to start playing songs!",
+        ephemeral: true,
+      });
+      return;
     }
+
+    await interaction.deferReply({ ephemeral: true });
+
+    let remoteStatus;
+    try {
+      await kenku.getPlaylists();
+      remoteStatus = "🟢 Kenku FM Remote API is reachable — `/play`, `/pause`, `/skip` etc. are live.";
+    } catch (error) {
+      remoteStatus = `🔴 ${error.message}`;
+    }
+
+    const urlStatus = (await tabPlayer.isAvailable())
+      ? "🟢 Debug mode detected — `/play <url>` (experimental) is available."
+      : "🟡 Kenku FM is not in debug mode — `/play <url>` is unavailable (library playback still works). Launch Kenku via kenku-debug.bat to enable it.";
+
+    await interaction.editReply(`${remoteStatus}\n${urlStatus}`);
   },
 };

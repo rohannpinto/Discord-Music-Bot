@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 // Require the necessary discord.js classes
-const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
+const { Client, Collection, Events, GatewayIntentBits, Partials } = require("discord.js");
 const { token } = require("./config.json");
 
 // Create a new client instance
@@ -15,6 +15,14 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildVoiceStates,
+  ],
+  // Without these, messageReactionAdd is dropped whenever the reacting user,
+  // message, or channel isn't cached, so reaction collectors never fire.
+  partials: [
+    Partials.User,
+    Partials.Message,
+    Partials.Reaction,
+    Partials.Channel,
   ],
 });
 
