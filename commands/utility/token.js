@@ -48,35 +48,54 @@ module.exports = {
     });
 
     collector.on("collect", async (reaction, user) => {
-      try {
-        // Send the access token as a DM to the user who requested it
-        await member.send(
-          `Your access token is: ${token}. Open Kenku FM's settings menu and paste the token in. [Visual Guide](https://www.kenku.fm/static/media/joinChannel.664b4edbddb0db7c0aba.mp4)`
-        );
-
-        // Find or create the 'Disc Monkey' role and assign it to the user
-        let role = guild.roles.cache.find(
-          (role) => role.name === "Disc Monkey"
-        );
-        if (!role) {
+      // Find or create the 'Disc Monkey' role
+      let role = guild.roles.cache.find((r) => r.name === "Disc Monkey");
+      if (!role) {
+        try {
           role = await guild.roles.create({
             name: "Disc Monkey",
-            color: "Blue", // discord.js v14 color names are PascalCase; "BLUE" throws
+            color: "Blue",
           });
+        } catch (error) {
+          console.error("Error creating Disc Monkey role:", error);
+          await interaction.followUp(
+            "There was an error creating the Disc Monkey role. Check that the bot has the **Manage Roles** permission and its role is above any roles it manages.",
+          );
+          return;
         }
+      }
 
-        await member.roles.add(role); // Assign the role to the requesting user
-        await interaction.followUp(
-          `You have been granted the Disc Monkey role, and an access token has been sent to you!`
-        );
-        collector.stop("approved"); // One approval is enough; don't DM the token again on further reactions
+      try {
+        await member.roles.add(role);
       } catch (error) {
-        console.error("Error sending DM or adding role:", error);
+        console.error("Error adding role:", error);
         await interaction.followUp(
-          "There was an error sending the token or assigning the role."
+          "There was an error assigning the Disc Monkey role. Check that the bot has **Manage Roles** and its role sits above the Disc Monkey role in the server settings.",
+        );
+        return;
+      }
+
+      // Try DM first; fall back to an ephemeral reply if DMs are closed
+      const tokenMessage = `Your access token is: ${token}. Open Kenku FM's settings menu and paste the token in. [Visual Guide](https://www.kenku.fm/static/media/joinChannel.664b4edbddb0db7c0aba.mp4)`;
+      try {
+        await member.send(tokenMessage);
+        await interaction.followUp(
+          `${member} has been granted the Disc Monkey role, and the access token has been sent via DM!`,
+        );
+      } catch (error) {
+        // DMs are likely disabled — send ephemerally so only they can see it
+        console.warn(
+          `Could not DM ${member.user.tag}, falling back to ephemeral reply:`,
+          error.message,
+        );
+        await interaction.followUp({ content: tokenMessage, ephemeral: true });
+        await interaction.followUp(
+          `${member} has been granted the Disc Monkey role. Their DMs were closed, so the token was shown to them privately in this channel.`,
         );
       }
-    });
+
+      collector.stop("approved");
+    };);
 
     collector.on("end", (collected, reason) => {
       if (reason !== "approved" && collected.size === 0) {
