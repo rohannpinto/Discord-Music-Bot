@@ -95,7 +95,7 @@ module.exports = {
       }
 
       collector.stop("approved");
-    };);
+    });
 
     collector.on("end", (collected, reason) => {
       if (reason !== "approved" && collected.size === 0) {
