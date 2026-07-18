@@ -61,6 +61,12 @@ const getSoundboards = () => request("GET", "/soundboard");
 const playSound = (id) => request("PUT", "/soundboard/play", { id });
 const stopSound = (id) => request("PUT", "/soundboard/stop", { id });
 
+// --- Discord voice connection ---
+const getDiscordStatus = () => request("GET", "/discord");
+const connectToChannel = (channelId, guildId) =>
+  request("PUT", "/discord", { channelId, guildId });
+const disconnectFromChannel = () => request("DELETE", "/discord");
+
 /*
 Fuzzy-search the Kenku library for a track or playlist by name.
 Returns { id, title, type: "track" | "playlist", playlist } or null.
@@ -130,4 +136,7 @@ module.exports = {
   playSound,
   stopSound,
   findInLibrary,
+  getDiscordStatus,
+  connectToChannel,
+  disconnectFromChannel,
 };

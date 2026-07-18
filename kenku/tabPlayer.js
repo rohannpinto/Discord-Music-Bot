@@ -141,8 +141,23 @@ async function playUrl(url) {
       const state = await evaluate(
         session,
         `(() => {
-          const media = document.querySelector("video, audio");
+          // Skip any skippable ad
+          const skipBtn = document.querySelector(".ytp-skip-ad-button, .ytp-ad-skip-button");
+          if (skipBtn) skipBtn.click();
+
+          // Fast-forward non-skippable pre-roll ads
+          const adVideo = document.querySelector(".ad-container video, .ad-showing video");
+          if (adVideo && isFinite(adVideo.duration)) adVideo.currentTime = adVideo.duration;
+
+          const media = document.querySelector("video.html5-main-video, video, audio");
           if (!media) return { status: "nomedia", title: document.title };
+
+          // Wire up looping once via ended event
+          if (!media._loopPatched) {
+            media._loopPatched = true;
+            media.addEventListener("ended", () => { media.currentTime = 0; media.play().catch(() => {}); });
+          }
+
           if (media.paused) {
             media.play().catch(() => {});
             const button = document.querySelector(".ytp-play-button, [data-testid='control-button-playpause']");

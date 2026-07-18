@@ -9,6 +9,7 @@ const { TabPlayerError } = require("./tabPlayer");
 
 async function withKenku(interaction, handler) {
   await interaction.deferReply();
+
   try {
     const message = await handler();
     await interaction.editReply(message);
