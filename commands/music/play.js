@@ -8,9 +8,20 @@
 */
 
 const { SlashCommandBuilder } = require("discord.js");
+const fs = require("node:fs");
+const path = require("node:path");
 const kenku = require("../../kenku/remote");
 const tabPlayer = require("../../kenku/tabPlayer");
 const { withKenku } = require("../../kenku/commandUtil");
+
+const SHORTCUTS_PATH = path.join(__dirname, "../../shortcuts.json");
+function loadShortcuts() {
+  try {
+    return JSON.parse(fs.readFileSync(SHORTCUTS_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
 
 
 module.exports = {
@@ -27,18 +38,24 @@ module.exports = {
     const query = interaction.options.getString("query", true).trim();
 
     await withKenku(interaction, async () => {
-      if (/^https?:\/\//i.test(query)) {
-        const result = await tabPlayer.playUrl(query);
+      // Resolve saved shortcut → URL, then check for raw URL, else library search
+      const shortcuts = loadShortcuts();
+      const shortcutUrl = shortcuts[query.toLowerCase()];
+      const urlToPlay = shortcutUrl ?? (/^https?:\/\//i.test(query) ? query : null);
+
+      if (urlToPlay) {
+        const result = await tabPlayer.playUrl(urlToPlay);
+        const label = shortcutUrl ? `**${query}**` : `**${result.title}**`;
         return result.confirmed
-          ? `▶️ Now playing in a Kenku FM tab: **${result.title}**`
-          : `🟡 Opened **${result.title}** in a Kenku FM tab, but couldn't confirm playback started — someone may need to press play in the Kenku window.`;
+          ? `▶️ Now playing in a Kenku FM tab: ${label}`
+          : `🟡 Opened ${label} in a Kenku FM tab, but couldn't confirm playback started — someone may need to press play in the Kenku window.`;
       }
 
       const match = await kenku.findInLibrary(query);
       if (!match) {
         return (
           `❌ Nothing in the Kenku library matches **${query}**. ` +
-          "Use `/library` to see what's available, or pass a URL to play it in a Kenku tab (experimental)."
+          "Use `/library` to see what's available, `/save` to add a URL shortcut, or pass a URL directly."
         );
       }
       await kenku.playTrack(match.id);
