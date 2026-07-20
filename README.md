@@ -1,8 +1,10 @@
-DISCLAIMER: By using HarambeBot or a copied version of this repo, you are agreeing to the bot's original [Terms of Service](https://docs.google.com/document/d/1YKQpZLua-HrpnGxKSBiiUYrGd31H7ar9ymMVX9adw4A/edit?usp=sharing) and [Privacy Policy](https://docs.google.com/document/d/1W7LMOhB9cl5tsNIUMlVhR4tOGH8CJb3yCv8FVnt9Jyk/edit?usp=sharing). HarambeBot (the bot) is a Personal Use Discord Music Bot that utilizes Kenku FM's computer application to pass any audio generated from any valid URL to any channel (with permissions) in any Discord server (with permissions).
+DISCLAIMER: ***This repository is for demonstration purposes only***. HarambeBot (the bot) is a Personal Use Discord Music and Chat Bot that utilizes Kenku FM's computer application, chrome devtools, ollama, and standard web protocols to pass any chat interactions or audio generated from any valid URL to any channel (with permissions) or  in any Discord server (with permissions). The The below information serves as a record of what I did. 
+
+
 
 HOW IT WORKS:
 
-Kenku FM is the audio client: it logs into Discord with the bot token, sits in a voice channel, and streams whatever it plays (local playlists or its built-in browser tabs) into that channel. This bot adds the traditional music-bot command layer on top: slash commands like `/play` are received by the bot process and forwarded to the local Kenku FM instance over its Remote API (`http://127.0.0.1:3333/v1`). Because audio always plays through Kenku (official web players, ads included), the setup stays TOS-compliant.
+Kenku FM is the audio client: it logs into Discord with the bot token, sits in a voice channel, and streams whatever it plays (local playlists or its built-in browser tabs) into that channel. This bot adds the traditional music-bot command layer on top: slash commands like `/play` are received by the bot process and forwarded to the local Kenku FM instance over its Remote API (`http://127.0.0.1:3333/v1`).
 
 ```
 Discord user ──/play──▶ HarambeBot (node) ──HTTP──▶ Kenku FM (local app) ──audio──▶ Discord voice channel
