@@ -1,6 +1,17 @@
 const { SlashCommandBuilder } = require("discord.js");
+const fs = require("node:fs");
+const path = require("node:path");
 const kenku = require("../../kenku/remote");
 const { withKenku } = require("../../kenku/commandUtil");
+
+const SHORTCUTS_PATH = path.join(__dirname, "../../shortcuts.json");
+function loadShortcuts() {
+  try {
+    return JSON.parse(fs.readFileSync(SHORTCUTS_PATH, "utf8"));
+  } catch {
+    return {};
+  }
+}
 
 const MAX_TRACKS_PER_PLAYLIST = 10;
 
@@ -28,8 +39,17 @@ module.exports = {
         sections.push(`🎵 **${playlist.title || "Untitled playlist"}** (${ids.length} tracks)\n${names.join("\n")}`);
       }
 
+      // Shortcuts section
+      const shortcuts = loadShortcuts();
+      const shortcutEntries = Object.entries(shortcuts);
+      let shortcutSection = "";
+      if (shortcutEntries.length > 0) {
+        const lines = shortcutEntries.map(([name, url]) => `  • **${name}** → <${url}>`).join("\n");
+        shortcutSection = `🔗 **Saved Shortcuts** — use \`/save\` to add or remove\n${lines}\n\n`;
+      }
+
       // Discord messages cap at 2000 characters
-      let message = "**Kenku FM Library** — play anything below with `/play <name>`\n\n";
+      let message = "**Kenku FM Library** — play anything below with `/play <name>`\n\n" + shortcutSection;
       for (const section of sections) {
         if (message.length + section.length + 2 > 1990) {
           message += "\n…truncated. Open Kenku FM to see the full library.";
