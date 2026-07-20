@@ -8,6 +8,18 @@ const { KenkuError } = require("./remote");
 const { TabPlayerError } = require("./tabPlayer");
 
 async function withKenku(interaction, handler) {
+  const hasRole = interaction.member?.roles.cache.some(
+    (r) => r.name === "Disc Monkey" || r.name === "Disc Gorilla"
+  );
+  if (!hasRole) {
+    await interaction.reply({
+      content:
+        "You need the **Disc Monkey** role to use music commands. Ask a Disc Gorilla for access via `/token`.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   await interaction.deferReply();
 
   try {
